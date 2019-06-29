@@ -1,7 +1,7 @@
 import os
 import argparse
 from solver import Solver
-from data_loader import get_loader
+from data_loader import get_loader,get_sys_loader
 from torch.backends import cudnn
 
 
@@ -27,15 +27,17 @@ def main(config):
 
     if config.dataset in ['market', 'duke']:
         reid_loader = get_loader(config.image_dir, config.batch_size, config.mode, config.num_workers)
+    elif config.dataset in ['sys2market']:
+        reid_loader = get_sys_loader(config)
 
     # Solver for training and testing StarGAN with CamStyle.
     solver = Solver(reid_loader, config)
 
     if config.mode == 'train':
-        if config.dataset in ['market', 'duke']:
+        if config.dataset in ['market', 'duke', 'sys2market']:
             solver.train()
     elif config.mode == 'test':
-        if config.dataset in ['market', 'duke']:
+        if config.dataset in ['market', 'duke' , 'sys2market']:
             solver.test()
 
 
@@ -43,7 +45,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Model configuration.
-    parser.add_argument('--c_dim', type=int, default=6, help='dimension of domain labels (number of cameras)')
+    parser.add_argument('--c_dim', type=int, default=7, help='dimension of domain labels (number of cameras)')
     parser.add_argument('--image_size', type=int, default=256, help='image resolution')
     parser.add_argument('--g_conv_dim', type=int, default=64, help='number of conv filters in the first layer of G')
     parser.add_argument('--d_conv_dim', type=int, default=64, help='number of conv filters in the first layer of D')
@@ -52,9 +54,9 @@ if __name__ == '__main__':
     parser.add_argument('--lambda_cls', type=float, default=1, help='weight for domain classification loss')
     parser.add_argument('--lambda_rec', type=float, default=10, help='weight for reconstruction loss')
     parser.add_argument('--lambda_gp', type=float, default=10, help='weight for gradient penalty')
-    
+
     # Training configuration.
-    parser.add_argument('--dataset', type=str, default='market', choices=['market', 'duke'])
+    parser.add_argument('--dataset', type=str, default='sys2market', choices=['market', 'duke', 'sys2market'])
     parser.add_argument('--batch_size', type=int, default=16, help='mini-batch size')
     parser.add_argument('--num_iters', type=int, default=220000, help='number of total iterations for training D')
     parser.add_argument('--num_iters_decay', type=int, default=110000, help='number of iterations for decaying lr')
@@ -75,10 +77,11 @@ if __name__ == '__main__':
 
     # Directories.
     parser.add_argument('--image_dir', type=str, default='../data/market/bounding_box_train')
-    parser.add_argument('--log_dir', type=str, default='./market/logs')
-    parser.add_argument('--model_save_dir', type=str, default='./market/models')
-    parser.add_argument('--sample_dir', type=str, default='./market/samples')
-    parser.add_argument('--result_dir', type=str, default='../data/market/bounding_box_train_camstyle_stargan4reid')
+    parser.add_argument('--third_dir',type=str,default='../data/sys/10/test',help='specify third part dataset if needed,regarding it as one domain')
+    parser.add_argument('--log_dir', type=str, default='/ssd4/ltb/models/starGAN/sys2market/10/logs/sys2market')
+    parser.add_argument('--model_save_dir', type=str, default='/ssd4/ltb/models/starGAN/sys2market/10')
+    parser.add_argument('--sample_dir', type=str, default='./samples/market')
+    parser.add_argument('--result_dir', type=str, default='/ssd4/ltb/datasets/starGAN/sys2market/10')
 
     # Step size.
     parser.add_argument('--log_step', type=int, default=10)

@@ -75,7 +75,7 @@ class Solver(object):
 
     def build_model(self):
         """Create a generator and a discriminator."""
-        if self.dataset in ['market', 'duke']:
+        if self.dataset in ['sys2market','market', 'duke']:
             self.G = Generator(self.g_conv_dim, self.c_dim, self.g_repeat_num)
             self.D = Discriminator(self.image_size, self.d_conv_dim, self.c_dim, self.d_repeat_num)
 
@@ -107,7 +107,7 @@ class Solver(object):
 
     def build_tensorboard(self):
         """Build a tensorboard logger."""
-        from logger import Logger
+        from .logger import Logger
         self.logger = Logger(self.log_dir)
 
     def update_lr(self, g_lr, d_lr):
@@ -174,9 +174,9 @@ class Solver(object):
             c_trg_list.append(c_trg.to(self.device))
         return c_trg_list
 
-    def classification_loss(self, logit, target, dataset='market'):
+    def classification_loss(self, logit, target, dataset='sys2market'):
         """Compute binary or softmax cross entropy loss."""
-        if dataset in ['market', 'duke']:
+        if dataset in ['sys2market','market', 'duke']:
             return F.cross_entropy(logit, target)
 
     def train(self):
